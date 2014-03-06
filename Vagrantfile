@@ -9,6 +9,18 @@ Vagrant.configure(api_version) do |config|
     ansible.playbook = "provisioning/playbook.yml"
     ansible.verbose = true
     ansible.sudo = true
+    ansible.extra_vars = {
+      gocd: {
+        agent: { 
+          instances: 2
+        },
+        server: {
+          host: "127.0.0.1",
+          port: 8153,
+          autoregister_key: "this-is-insecure"
+        }
+      }
+  }
   end
   config.vm.network "forwarded_port", guest: 8153, host: 8155
   config.vm.provider :virtualbox do |v|

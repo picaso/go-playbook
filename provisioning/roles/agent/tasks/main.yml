@@ -15,16 +15,32 @@
   command: dpkg -i /tmp/go-agent.deb
   when:  "'not found' in command_result.stderr"
 
-
 - shell: "echo {{ cpu_count.stdout }} cpu"
   when: cpu_count.stdout|int > 1
 
+- name: Creating additional agents - directory structure.
+  file: path="/var/lib/go-agent{{item}} mode=0755 owner=go group=go state=directory"
+  with_sequence: "start=1 end={{ cpu_count.stdout|int }}"
+  when: cpu_count.stdout|int > 1
+
+- file: path="/var/lib/go-agent{{item}}/config mode=0755 owner=go group=go state=directory"
+  with_sequence: "start=1 end={{ cpu_count.stdout|int }}"
+  when: cpu_count.stdout|int > 1
+
+
 - name: install go for multple cpu(s)
-  template: "src=../templates/go-agent.j2 dest=/etc/init.d/go-agent-{{ item }} owner=root group=root mode=0755"
+  template: "src=../templates/go-agent.j2 dest=/etc/init.d/go-agent{{ item }} owner=root group=root mode=0755"
+  template: "src=../templates/go-agent-sh.j2 dest=/usr/share/go-agent/agent{{ item }} owner=go group=go mode=0755"
+  template: "src=../templates/go-agent-defaults.j2 dest=/etc/default/go-agent{{ item }} mode=0644 owner=root group=root"
   with_sequence: "start=1 end={{ cpu_count.stdout|int }}"
   when: cpu_count.stdout|int > 1
 
 - name: start up go agent
   command: "service go-agent start"
   async: 45
-  poll: 10
+  poll: 0
+
+- name: start up other go agents for multiple cpu
+  command: "service go-agent{{item}} start"
+  with_sequence: "start=1 end={{ cpu_count.stdout|int }}"
+  when: cpu_count.stdout|int > 1
