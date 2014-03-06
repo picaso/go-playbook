@@ -1,0 +1,22 @@
+---
+
+- name: install JAVA and other utils
+  hosts: all
+  user: vagrant
+  sudo: yes
+  roles: 
+  - common
+
+- name: Download and Install Go server  
+  hosts: all
+  user: vagrant
+  sudo: yes
+  roles: 
+  - server
+
+- name: Download and Install Go agent  
+  hosts: all
+  user: vagrant
+  sudo: yes
+  roles: 
+  - agent

@@ -1,0 +1,17 @@
+---
+
+- shell: /etc/init.d/go-server status
+  register: command_result
+  ignore_errors: True
+
+- name: download go server file
+  get_url: url=http://download01.thoughtworks.com/go/debian/contrib/go-server-13.4.1-18342.deb dest=/tmp/go-server.deb
+  when:  "'not found' in command_result.stderr"
+
+- name: install go Server
+  command: dpkg -i /tmp/go-server.deb
+  async: 45
+  poll: 10
+  when:  "'not found' in command_result.stderr"
+
+
