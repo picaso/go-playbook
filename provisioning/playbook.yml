@@ -14,7 +14,7 @@
   roles: 
   - server
 
-- name: Download and Install Go agent  
+- name: Download and Install Go agent
   hosts: all
   user: vagrant
   sudo: yes

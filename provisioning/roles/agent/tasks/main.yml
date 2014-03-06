@@ -4,6 +4,9 @@
   register: command_result
   ignore_errors: True
 
+- shell: cat /proc/cpuinfo | grep processor | wc -l
+  register: cpu_count
+
 - name: download go agent installation file
   get_url: url=http://download01.thoughtworks.com/go/debian/contrib/go-agent-13.4.1-18342.deb dest=/tmp/go-agent.deb
   when:  "'not found' in command_result.stderr"
@@ -11,6 +14,15 @@
 - name: install go agent
   command: dpkg -i /tmp/go-agent.deb
   when:  "'not found' in command_result.stderr"
+
+
+- shell: "echo {{ cpu_count.stdout }} cpu"
+  when: cpu_count.stdout|int > 1
+
+- name: install go for multple cpu(s)
+  template: "src=../templates/go-agent.j2 dest=/etc/init.d/go-agent-{{ item }} owner=root group=root mode=0755"
+  with_sequence: "start=1 end={{ cpu_count.stdout|int }}"
+  when: cpu_count.stdout|int > 1
 
 - name: start up go agent
   command: "service go-agent start"
